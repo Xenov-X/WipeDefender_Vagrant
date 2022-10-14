@@ -1,0 +1,22 @@
+name: Obfuscate Defender Nuke
+on:
+  workflow_dispatch:
+  schedule:
+  - cron: "0 7 * * *"
+   
+  
+jobs:
+  check-bats-version:
+    runs-on: windows-latest
+    steps:
+      - name: GetObfuscator
+        run: git clone https://github.com/danielbohannon/Invoke-Obfuscation ..\Invoke-Obfuscation
+      - run: dir
+      - uses: actions/checkout@v2
+      - run: dir
+      - name: Obfuscate
+        shell: powershell
+        run: ipmo ..\Invoke-Obfuscation\Invoke-Obfuscation.psd1; Invoke-Obfuscation -ScriptPath .\disable-defender.ps1 -Command 'ENCODING\5' > disabledefender_obf.ps1
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Daily Obfuscated Action
