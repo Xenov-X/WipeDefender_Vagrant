@@ -14,9 +14,12 @@ jobs:
       - run: dir
       - uses: actions/checkout@v2
       - run: dir
-      - name: Obfuscate
+      - name: Obfuscate0
         shell: powershell
         run: ipmo ..\Invoke-Obfuscation\Invoke-Obfuscation.psd1; Invoke-Obfuscation -ScriptPath .\disable-defender.ps1 -Command 'ENCODING\5' > disabledefender_obf.ps1
+      - name: Obfuscate1
+        shell: powershell
+        run: ipmo ..\Invoke-Obfuscation\Invoke-Obfuscation.psd1; Invoke-Obfuscation -ScriptPath .\disable-defender-delete.ps1 -Command 'ENCODING\5' > disabledefender_delete_obf.ps1
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Daily Obfuscated Action
