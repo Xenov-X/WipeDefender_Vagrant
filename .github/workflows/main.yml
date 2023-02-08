@@ -20,6 +20,11 @@ jobs:
       - name: Obfuscate1
         shell: powershell
         run: ipmo ..\Invoke-Obfuscation\Invoke-Obfuscation.psd1; Invoke-Obfuscation -ScriptPath .\disable-defender-delete.ps1 -Command 'ENCODING\5' > disabledefender_delete_obf.ps1
+      - name: Obfuscate2
+        shell: powershell
+        run: ipmo ..\Invoke-Obfuscation\Invoke-Obfuscation.psd1; Invoke-Obfuscation -ScriptPath .\disable-defender-delete-norestart.ps1 -Command 'ENCODING\5' > disable-defender-delete-norestart_obf.ps1
+     
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Daily Obfuscated Action
+          
