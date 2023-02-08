@@ -12,7 +12,7 @@ jobs:
       - name: GetObfuscator
         run: git clone https://github.com/danielbohannon/Invoke-Obfuscation ..\Invoke-Obfuscation
       - run: dir
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: dir
       - name: Obfuscate0
         shell: powershell
